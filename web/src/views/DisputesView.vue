@@ -105,20 +105,20 @@ onMounted(load)
           <tr
             v-for="d in result.items"
             :key="d.id"
-            class="row-link"
+            class="row-link dispute-row"
             tabindex="0"
             @click="open(d.id)"
             @keydown.enter="open(d.id)"
           >
-            <td class="num nowrap">{{ formatDate(d.createdAt) }}</td>
-            <td>
+            <td class="num nowrap c-date">{{ formatDate(d.createdAt) }}</td>
+            <td class="c-main">
               <div class="merchant">{{ d.transaction.merchant }}</div>
               <div class="muted small num">{{ d.transaction.reference }}</div>
             </td>
             <td v-if="auth.isAgent" class="hide-sm">{{ d.customerName }}</td>
             <td class="hide-sm muted small">{{ reasonLabels[d.reason] }}</td>
-            <td class="right num amount">{{ formatMoney(d.transaction.amount, d.transaction.currency) }}</td>
-            <td><StatusBadge :status="d.status" /></td>
+            <td class="right num amount c-amount">{{ formatMoney(d.transaction.amount, d.transaction.currency) }}</td>
+            <td class="c-status"><StatusBadge :status="d.status" /></td>
           </tr>
         </tbody>
         <tbody v-else>
@@ -183,6 +183,37 @@ onMounted(load)
 
 .nowrap {
   white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .dispute-row {
+    display: grid !important;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'main amount'
+      'date status';
+    gap: 4px 12px;
+    padding: 14px 16px;
+  }
+
+  .c-main {
+    grid-area: main;
+  }
+
+  .c-amount {
+    grid-area: amount;
+  }
+
+  .c-date {
+    grid-area: date;
+    color: var(--ink-muted);
+    font-size: 0.85rem;
+  }
+
+  .c-status {
+    grid-area: status;
+    text-align: right;
+  }
 }
 
 .row-link:focus-visible {

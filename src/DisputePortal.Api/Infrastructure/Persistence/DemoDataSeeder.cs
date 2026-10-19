@@ -43,7 +43,7 @@ public sealed class DemoDataSeeder(AppDbContext db, TimeProvider clock, ILogger<
 
         var alice = new User(Guid.CreateVersion7(), "alice@demo.test", "Alice Mokoena", hash, Roles.Customer, now);
         var bongani = new User(Guid.CreateVersion7(), "bongani@demo.test", "Bongani Dlamini", hash, Roles.Customer, now);
-        var agent = new User(Guid.CreateVersion7(), "agent@demo.test", "Thandi (Disputes Team)", hash, Roles.Agent, now);
+        var agent = new User(Guid.CreateVersion7(), "agent@demo.test", "Thandi Nkosi", hash, Roles.Agent, now);
         db.Users.AddRange(alice, bongani, agent);
 
         var aliceTxns = GenerateTransactions(alice.Id, customerNo: 1, now, seed: 1001);

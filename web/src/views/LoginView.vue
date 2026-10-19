@@ -17,7 +17,7 @@ const expired = route.query.expired === '1'
 const demoAccounts = [
   { email: 'alice@demo.test', name: 'Alice Mokoena', role: 'Customer', hint: 'has dispute history' },
   { email: 'bongani@demo.test', name: 'Bongani Dlamini', role: 'Customer', hint: 'no disputes yet' },
-  { email: 'agent@demo.test', name: 'Thandi', role: 'Disputes agent', hint: 'reviews & resolves' },
+  { email: 'agent@demo.test', name: 'Thandi Nkosi', role: 'Disputes agent', hint: 'reviews & resolves' },
 ]
 
 function useDemo(account: string) {

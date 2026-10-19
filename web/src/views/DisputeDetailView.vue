@@ -223,6 +223,21 @@ watch(() => props.id, load, { immediate: true })
   font-size: 0.93rem;
 }
 
+@media (max-width: 640px) {
+  .facts {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .facts dd {
+    margin-bottom: 10px;
+  }
+
+  .pad {
+    padding: 18px;
+  }
+}
+
 .facts dt {
   color: var(--ink-muted);
 }

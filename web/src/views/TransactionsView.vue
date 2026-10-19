@@ -90,15 +90,15 @@ onMounted(load)
           </tr>
         </tbody>
         <tbody v-else-if="result && result.items.length > 0" :class="{ stale: loading }">
-          <tr v-for="t in result.items" :key="t.id">
-            <td class="num nowrap">{{ formatDate(t.occurredAt) }}</td>
-            <td>
+          <tr v-for="t in result.items" :key="t.id" class="txn">
+            <td class="num nowrap c-date">{{ formatDate(t.occurredAt) }}</td>
+            <td class="c-main">
               <div class="merchant">{{ t.merchant }}</div>
               <div class="muted small">{{ t.category }}</div>
             </td>
             <td class="hide-sm muted num small">{{ t.reference }}</td>
-            <td class="right num amount">{{ formatMoney(t.amount, t.currency) }}</td>
-            <td>
+            <td class="right num amount c-amount">{{ formatMoney(t.amount, t.currency) }}</td>
+            <td class="c-status">
               <RouterLink
                 v-if="t.latestDispute"
                 :to="{ name: 'dispute', params: { id: t.latestDispute.id } }"
@@ -108,7 +108,7 @@ onMounted(load)
               </RouterLink>
               <span v-else class="muted">—</span>
             </td>
-            <td class="right">
+            <td class="right c-action">
               <button
                 class="btn btn-sm"
                 :disabled="!t.canDispute"
@@ -167,6 +167,55 @@ onMounted(load)
 
 .badge-link {
   text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .txn {
+    display: grid !important;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'main amount'
+      'date status'
+      'action action';
+    gap: 4px 12px;
+    padding: 14px 16px;
+  }
+
+  .c-main {
+    grid-area: main;
+  }
+
+  .c-amount {
+    grid-area: amount;
+  }
+
+  .c-date {
+    grid-area: date;
+    color: var(--ink-muted);
+    font-size: 0.85rem;
+  }
+
+  .c-status {
+    grid-area: status;
+    text-align: right;
+  }
+
+  .c-status .muted {
+    display: none;
+  }
+
+  .c-action {
+    grid-area: action;
+    margin-top: 8px;
+  }
+
+  .c-action .btn {
+    width: 100%;
+  }
+
+  .search {
+    width: 100%;
+  }
 }
 
 .sr-only {

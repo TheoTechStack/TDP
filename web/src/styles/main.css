@@ -279,3 +279,52 @@ textarea {
     padding: 12px 10px;
   }
 }
+
+input[type='radio'],
+input[type='checkbox'] {
+  accent-color: var(--accent);
+}
+
+/* Phones: tables become stacked cards. Each view places its cells with grid-template-areas. */
+@media (max-width: 640px) {
+  .page {
+    padding: 20px 16px 48px;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table,
+  .table tbody {
+    display: block;
+  }
+
+  .table tr {
+    display: block;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .table tr:last-child {
+    border-bottom: none;
+  }
+
+  .table td {
+    display: block;
+    border: none;
+    padding: 0;
+  }
+
+  .table td.hide-sm {
+    display: none;
+  }
+
+  .table td.empty,
+  .table td[colspan] {
+    padding: 16px;
+  }
+
+  .table .right {
+    text-align: right;
+  }
+}

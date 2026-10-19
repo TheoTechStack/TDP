@@ -124,13 +124,24 @@ async function signOut() {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+.nav a {
+  white-space: nowrap;
+}
+
 @media (max-width: 640px) {
-  .who {
+  .who,
+  .logo span {
     display: none;
   }
 
   .topbar-inner {
-    gap: 12px;
+    gap: 8px;
+    padding: 0 12px;
+  }
+
+  .nav a {
+    padding: 7px 8px;
+    font-size: 0.85rem;
   }
 }
 </style>
