@@ -1,15 +1,17 @@
 using System.Text;
 using DisputePortal.Api.Domain;
+using DisputePortal.Api.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DisputePortal.Api.Infrastructure.Persistence;
 
 /// <summary>
+/// Also the <see cref="IUnitOfWork"/>: repositories share this scoped context and the use case commits it.
 /// EF Core is used for data access only. The schema is owned by the versioned SQL scripts in
 /// <c>Migrations/</c> (see <see cref="SqlMigrator"/>), so the mapping below must match them.
 /// </summary>
-public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options), IUnitOfWork
 {
     public DbSet<User> Users => Set<User>();
 

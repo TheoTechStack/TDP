@@ -97,6 +97,13 @@ uses instead of parsing messages.
   cases and call the domain. The rules themselves live in `Domain/`. I'd split this into separate
   projects (Domain / Application / Infrastructure) once there are several bounded contexts; for one
   aggregate that would only add interfaces and mapping code.
+- **Repositories per aggregate, unit of work for commits.** Services depend on `IDisputeRepository`,
+  `ITransactionRepository`, `IUserRepository` and `IUnitOfWork` (interfaces in `Domain/Repositories`),
+  never on EF Core. Repositories are specific to each aggregate, not a generic `Repository<T>`, so each
+  one exposes only the queries the use cases need. They never save on their own: the service calls
+  `IUnitOfWork.SaveChangesAsync` once its work is complete, so one use case is one transaction. This
+  keeps the services unit-testable with Moq (`DisputeServiceTests`) while the integration tests cover
+  the real EF Core queries against PostgreSQL.
 - **One container, two apps.** The Vue build is copied into the API's `wwwroot`, so UI and API share an
   origin: no CORS, one image, one deployment, one thing to scale. Splitting them later (S3 + CloudFront
   for the SPA) is a deployment change, not a code change.
@@ -157,12 +164,15 @@ src/DisputePortal.Api/
     Transactions/            TransactionsController · TransactionService · TransactionContracts
     Auth/                    AuthController · AuthService · AuthContracts
   Domain/                    Dispute aggregate + state machine, DisputePolicy, entities
+    Repositories/            IDisputeRepository, ITransactionRepository, IUserRepository, IUnitOfWork
   Infrastructure/
-    Persistence/             DbContext, SQL migrations + migrator, demo seeder
+    Persistence/             DbContext (the unit of work), SQL migrations + migrator, demo seeder
+      Repositories/          EF Core implementations of the repository interfaces
     Security/                JWT issuing, password hashing
     Web/                     Problem-details mapping, correlation id, security headers, health
 tests/DisputePortal.Api.Tests/
   Domain/                    Fast unit tests for the workflow rules
+  Features/                  Service unit tests with mocked repositories (Moq)
   Integration/               Real HTTP + real PostgreSQL (Testcontainers)
 web/                         Vue 3 + TypeScript SPA (Vite, Vue Router, Pinia, Vitest)
 infra/terraform/             AWS infrastructure

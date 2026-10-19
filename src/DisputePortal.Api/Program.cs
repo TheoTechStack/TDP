@@ -2,10 +2,12 @@ using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using DisputePortal.Api.Domain;
+using DisputePortal.Api.Domain.Repositories;
 using DisputePortal.Api.Features.Auth;
 using DisputePortal.Api.Features.Disputes;
 using DisputePortal.Api.Features.Transactions;
 using DisputePortal.Api.Infrastructure.Persistence;
+using DisputePortal.Api.Infrastructure.Persistence.Repositories;
 using DisputePortal.Api.Infrastructure.Security;
 using DisputePortal.Api.Infrastructure.Web;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -22,6 +24,10 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<DatabaseConnectionFactory>();
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
     options.UseNpgsql(sp.GetRequiredService<DatabaseConnectionFactory>().ConnectionString));
+builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
+builder.Services.AddScoped<IDisputeRepository, DisputeRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<SqlMigrator>();
 builder.Services.AddScoped<DemoDataSeeder>();
 
