@@ -6,6 +6,8 @@ append-only history, so the full trail of every dispute (open, decided or withdr
 
 **Stack:** .NET 10 Web API (controllers) · EF Core + PostgreSQL 17 · Vue 3 + TypeScript (Vite) · Docker · Terraform on AWS (ECS Fargate, RDS)
 
+**Live demo:** http://dispute-portal-1381412907.eu-west-1.elb.amazonaws.com — sign in with any demo account below (password `Passw0rd!`). Hosted on AWS ECS Fargate + RDS PostgreSQL in eu-west-1, deployed with `scripts/deploy.sh`.
+
 **Architecture diagram:** [`docs/architecture.drawio`](docs/architecture.drawio). Open it in [diagrams.net](https://app.diagrams.net) or the VS Code draw.io extension.
 
 ---
