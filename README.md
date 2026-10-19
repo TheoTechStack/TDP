@@ -151,6 +151,9 @@ The script prints the URL. The first deploy takes ~15 minutes (mostly RDS). To s
 ACM certificate: `-var certificate_arn=...`. Tear down with
 `terraform -chdir=infra/terraform destroy -var image_tag=x`.
 
+On a new AWS free-plan account, RDS only allows 1 day of backups: run
+`TF_VAR_db_backup_retention_days=1 ./scripts/deploy.sh`.
+
 Cost-conscious defaults for a demo: tasks run in public subnets with no NAT gateway (inbound only from
 the ALB), single-AZ database. For production set `db_multi_az=true` and `deletion_protection=true`,
 and move tasks to private subnets behind NAT or VPC endpoints.
