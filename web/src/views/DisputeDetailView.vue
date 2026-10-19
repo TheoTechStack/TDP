@@ -263,13 +263,15 @@ watch(() => props.id, load, { immediate: true })
 }
 
 .resolution.Upheld {
-  background: #e3f4ee;
-  color: #0e5c46;
+  background: var(--accent-soft);
+  color: var(--brand);
+  border-left: 3px solid var(--brand);
 }
 
 .resolution.Rejected {
   background: var(--danger-soft);
   color: var(--danger);
+  border-left: 3px solid var(--danger);
 }
 
 .actions {
@@ -312,21 +314,25 @@ watch(() => props.id, load, { immediate: true })
 }
 
 .t-Submitted::before {
-  border-color: #2a5bb8 !important;
+  border-color: var(--status-open) !important;
 }
 
 .t-UnderReview::before {
-  border-color: #94620a !important;
+  border-color: var(--status-open) !important;
+  background: var(--status-open) !important;
 }
 
 .t-Upheld::before {
-  border-color: #12795c !important;
-  background: #12795c !important;
+  border-color: var(--brand) !important;
+  background: var(--brand) !important;
 }
 
 .t-Rejected::before {
-  border-color: #b4232f !important;
-  background: #b4232f !important;
+  border-color: var(--danger) !important;
+}
+
+.t-Withdrawn::before {
+  border-style: dashed !important;
 }
 
 .t-head {

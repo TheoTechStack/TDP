@@ -9,53 +9,52 @@ const label = computed(() => statusLabels[props.status])
 </script>
 
 <template>
-  <span class="badge" :class="`badge--${status}`" data-testid="status-badge">
-    <span class="dot" aria-hidden="true" />
-    {{ label }}
-  </span>
+  <span class="badge" :class="`badge--${status}`" data-testid="status-badge">{{ label }}</span>
 </template>
 
 <style scoped>
+/*
+ * Three brand hues plus neutral. Fill vs outline carries meaning, not just colour:
+ *   open      → cerulean   (outline = waiting, solid = being worked)
+ *   decided   → navy solid = upheld, red outline = rejected
+ *   withdrawn → neutral dashed
+ */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
-.dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
 .badge--Submitted {
-  background: #e8effc;
-  color: #2a5bb8;
+  color: var(--status-open);
+  border-color: var(--status-open);
 }
 
 .badge--UnderReview {
-  background: #fdf3dc;
-  color: #94620a;
+  color: #fff;
+  background: var(--status-open);
 }
 
 .badge--Upheld {
-  background: #e3f4ee;
-  color: #12795c;
+  color: #fff;
+  background: var(--brand);
 }
 
 .badge--Rejected {
-  background: #fbeaec;
-  color: #b4232f;
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 .badge--Withdrawn {
-  background: #eef0ef;
-  color: #5b6b68;
+  color: var(--ink-muted);
+  border: 1px dashed var(--line-strong);
 }
 </style>
