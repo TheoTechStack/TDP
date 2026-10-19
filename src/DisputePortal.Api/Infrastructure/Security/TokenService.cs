@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text;
 using DisputePortal.Api.Domain;
+using DisputePortal.Api.Features;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -57,5 +58,5 @@ public static class ClaimsPrincipalExtensions
     public static string GetRole(this ClaimsPrincipal principal) =>
         principal.FindFirstValue(ClaimNames.Role) ?? Roles.Customer;
 
-    public static bool IsAgent(this ClaimsPrincipal principal) => principal.GetRole() == Roles.Agent;
+    public static CurrentUser ToCurrentUser(this ClaimsPrincipal principal) => new(principal.GetUserId(), principal.GetRole());
 }

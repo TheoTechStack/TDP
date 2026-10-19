@@ -10,6 +10,7 @@ using DisputePortal.Api.Infrastructure.Security;
 using DisputePortal.Api.Infrastructure.Web;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -24,7 +25,16 @@ builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 builder.Services.AddScoped<SqlMigrator>();
 builder.Services.AddScoped<DemoDataSeeder>();
 
-builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+// ---- Feature services (vertical slices: each feature owns its controller, service and contracts) --
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<TransactionService>();
+builder.Services.AddScoped<DisputeService>();
+
+builder.Services
+    .AddControllers(o =>
+        // Validation errors are keyed by the JSON property name ("reason", not "Reason").
+        o.ModelMetadataDetailsProviders.Add(new SystemTextJsonValidationMetadataProvider()))
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddProblemDetails(o => o.CustomizeProblemDetails = ctx =>
     ctx.ProblemDetails.Extensions["traceId"] = Activity.Current?.TraceId.ToString() ?? ctx.HttpContext.TraceIdentifier);
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
@@ -65,7 +75,7 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddRateLimiter(o =>
 {
     o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    o.AddPolicy(AuthEndpoints.LoginRateLimitPolicy, ctx =>
+    o.AddPolicy(AuthController.LoginRateLimitPolicy, ctx =>
     {
         var permits = ctx.RequestServices.GetRequiredService<IConfiguration>().GetValue("RateLimiting:LoginPermitPerMinute", 10);
         return RateLimitPartition.GetFixedWindowLimiter(
@@ -112,9 +122,7 @@ if (app.Environment.IsDevelopment())
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c.Tags.Contains("ready") });
 
-app.MapAuthEndpoints();
-app.MapTransactionEndpoints();
-app.MapDisputeEndpoints();
+app.MapControllers();
 
 // Unknown API routes are real 404s; everything else falls through to the SPA's client-side router.
 app.MapFallback("/api/{**path}", () => Results.NotFound());

@@ -4,7 +4,7 @@ Customers view their transactions, dispute the ones that look wrong, and follow 
 to a decision. A disputes agent reviews and resolves them. Every status change is kept in an
 append-only history, so the full trail of every dispute (open, decided or withdrawn) is always visible.
 
-**Stack:** .NET 10 minimal API · EF Core + PostgreSQL 17 · Vue 3 + TypeScript (Vite) · Docker · Terraform on AWS (ECS Fargate, RDS)
+**Stack:** .NET 10 Web API (controllers) · EF Core + PostgreSQL 17 · Vue 3 + TypeScript (Vite) · Docker · Terraform on AWS (ECS Fargate, RDS)
 
 **Architecture diagram:** [`docs/architecture.drawio`](docs/architecture.drawio). Open it in [diagrams.net](https://app.diagrams.net) or the VS Code draw.io extension.
 
@@ -91,6 +91,12 @@ uses instead of parsing messages.
 
 ### Design decisions
 
+- **Vertical slices.** Each feature (`Auth`, `Transactions`, `Disputes`) owns its controller, service and
+  contracts, so a change to disputes touches one folder. Controllers are thin: they bind the request,
+  apply the authorisation policy and turn the service result into a status code. Services hold the use
+  cases and call the domain. The rules themselves live in `Domain/`. I'd split this into separate
+  projects (Domain / Application / Infrastructure) once there are several bounded contexts; for one
+  aggregate that would only add interfaces and mapping code.
 - **One container, two apps.** The Vue build is copied into the API's `wwwroot`, so UI and API share an
   origin: no CORS, one image, one deployment, one thing to scale. Splitting them later (S3 + CloudFront
   for the SPA) is a deployment change, not a code change.
@@ -146,8 +152,11 @@ and move tasks to private subnets behind NAT or VPC endpoints.
 
 ```
 src/DisputePortal.Api/
-  Domain/                    Dispute aggregate + state machine, policy, entities
-  Features/                  Endpoints and contracts per feature (Auth, Transactions, Disputes)
+  Features/                  One folder per feature (vertical slice)
+    Disputes/                DisputesController · DisputeService · DisputeContracts
+    Transactions/            TransactionsController · TransactionService · TransactionContracts
+    Auth/                    AuthController · AuthService · AuthContracts
+  Domain/                    Dispute aggregate + state machine, DisputePolicy, entities
   Infrastructure/
     Persistence/             DbContext, SQL migrations + migrator, demo seeder
     Security/                JWT issuing, password hashing

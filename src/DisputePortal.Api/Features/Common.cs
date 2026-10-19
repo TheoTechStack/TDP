@@ -1,4 +1,12 @@
+using DisputePortal.Api.Domain;
+
 namespace DisputePortal.Api.Features;
+
+/// <summary>The authenticated caller, as the services need it. Built from the JWT by the controllers.</summary>
+public sealed record CurrentUser(Guid Id, string Role)
+{
+    public bool IsAgent => Role == Roles.Agent;
+}
 
 public sealed record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, int TotalCount)
 {
@@ -14,12 +22,4 @@ public sealed record Paging(int Page, int PageSize)
 
     public static Paging From(int? page, int? pageSize) =>
         new(Math.Max(1, page ?? 1), Math.Clamp(pageSize ?? DefaultPageSize, 1, MaxPageSize));
-}
-
-internal static class Problems
-{
-    public static IResult Validation(string field, string message) =>
-        TypedResults.ValidationProblem(new Dictionary<string, string[]> { [field] = [message] });
-
-    public static IResult Validation(IDictionary<string, string[]> errors) => TypedResults.ValidationProblem(errors);
 }
