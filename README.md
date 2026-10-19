@@ -140,25 +140,62 @@ authorisation policies would not change.
 autoscaling 2–6), RDS PostgreSQL 17 (encrypted, private subnets, password managed by RDS in Secrets
 Manager), ECR, a generated JWT signing key in Secrets Manager, CloudWatch logs and alarms.
 
-Prerequisites: AWS credentials, Terraform ≥ 1.8, Docker. `af-south-1` must be
-[enabled on the account](https://docs.aws.amazon.com/accounts/latest/reference/manage-acct-regions.html);
-otherwise set `AWS_REGION`.
+### CI/CD: every push to `main` deploys
 
-```bash
-git commit -am "..."          # the image is tagged with the commit SHA
-./scripts/deploy.sh           # build → push to ECR → terraform apply → wait for a stable service
+```
+push to main ──► API tests ─┐
+                 Web tests ─┼─► Docker image build ─► Deploy (production environment)
+                            │                          ├─ OIDC → short-lived AWS credentials
+                            │                          └─ ./scripts/deploy.sh
+pull request ──► same tests, no deploy
 ```
 
-The script prints the URL. The first deploy takes ~15 minutes (mostly RDS). To serve HTTPS, pass an
-ACM certificate: `-var certificate_arn=...`. Tear down with
-`terraform -chdir=infra/terraform destroy -var image_tag=x`.
+- **No AWS keys in GitHub.** The deploy job logs in with GitHub's OIDC token and assumes
+  `tdp-github-deploy`. That role's trust policy accepts only
+  `repo:TheoTechStack/TDP:environment:production`, so forks, pull requests and other repositories
+  cannot deploy.
+- **Shared, locked state.** Terraform state lives in a versioned, encrypted S3 bucket with S3-native
+  locking (`use_lockfile`), so CI and a laptop can never apply at the same time or drift apart.
+- **One deploy path.** CI runs the same `scripts/deploy.sh` you can run locally; there is no separate
+  pipeline-only logic to keep in sync.
+- **Safe ordering.** Deploys wait for every test, queue instead of overlapping, and are never cancelled
+  mid-apply. ECS then rolls out with a circuit breaker that reverts a failing release.
 
-On a new AWS free-plan account, RDS only allows 1 day of backups: run
-`TF_VAR_db_backup_retention_days=1 ./scripts/deploy.sh`.
+### One-time setup
+
+```bash
+# 1. State bucket + GitHub OIDC provider + deploy role (from a workstation with admin credentials)
+terraform -chdir=infra/bootstrap init
+terraform -chdir=infra/bootstrap apply          # prints deploy_role_arn
+
+# 2. Move existing local state into the bucket (only if you deployed before step 1)
+terraform -chdir=infra/terraform init -migrate-state \
+  -backend-config="bucket=tdp-tfstate-$(aws sts get-caller-identity --query Account --output text)" \
+  -backend-config="region=eu-west-1"
+```
+
+3. In GitHub → Settings → Environments, create `production` (optionally add required reviewers).
+4. In GitHub → Settings → Variables → Actions, add `AWS_DEPLOY_ROLE_ARN` = the bootstrap output.
+   Optional: `CPU_ARCHITECTURE=X86_64` for a private repo (ARM runners are free for public repos only),
+   `DB_BACKUP_RETENTION_DAYS=7` on a paid AWS account.
+
+### Manual deploy (fallback)
+
+```bash
+git commit -am "..."     # the image is tagged with the commit SHA
+./scripts/deploy.sh      # init (S3 state) → ECR → build + push → terraform apply → wait for healthy
+```
+
+Defaults to `eu-west-1`; set `AWS_REGION` for another region. The first deploy takes ~15 minutes
+(mostly RDS). On a new AWS free-plan account, RDS only allows 1 day of backups:
+`TF_VAR_db_backup_retention_days=1 ./scripts/deploy.sh`. To serve HTTPS, pass an ACM certificate:
+`-var certificate_arn=...`. Tear down with `terraform -chdir=infra/terraform destroy -var image_tag=x`.
 
 Cost-conscious defaults for a demo: tasks run in public subnets with no NAT gateway (inbound only from
 the ALB), single-AZ database. For production set `db_multi_az=true` and `deletion_protection=true`,
-and move tasks to private subnets behind NAT or VPC endpoints.
+and move tasks to private subnets behind NAT or VPC endpoints. The deploy role currently has
+`AdministratorAccess` (Terraform manages IAM, VPC and RDS); the control is its narrow trust policy, and
+the next step is a least-privilege policy scoped to this stack.
 
 ## Project layout
 
@@ -180,7 +217,8 @@ tests/DisputePortal.Api.Tests/
   Features/                  Service unit tests with mocked repositories (Moq)
   Integration/               Real HTTP + real PostgreSQL (Testcontainers)
 web/                         Vue 3 + TypeScript SPA (Vite, Vue Router, Pinia, Vitest)
-infra/terraform/             AWS infrastructure
+infra/bootstrap/             One-time: Terraform state bucket + GitHub OIDC deploy role
+infra/terraform/             AWS infrastructure (state in S3)
 docs/architecture.drawio     Architecture diagram
 Dockerfile                   Multi-stage: Node build → .NET publish → chiseled runtime
 ```
@@ -191,5 +229,5 @@ Dockerfile                   Multi-stage: Node build → .NET publish → chisel
   from `dispute_events` → SQS → SES). Both are on the diagram's roadmap.
 - Managed identity (Cognito / IdP) and MFA for agents.
 - Agent assignment and SLA timers on the queue; idempotency keys on `POST` for flaky mobile networks.
-- CD from GitHub Actions using OIDC into an AWS deploy role, with remote Terraform state.
+- Least-privilege policy for the deploy role instead of AdministratorAccess.
 - Playwright end-to-end smoke test run against each deployment.

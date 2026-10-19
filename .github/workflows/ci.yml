@@ -1,13 +1,16 @@
-name: CI
+name: CI/CD
 
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch: # re-run a deploy by hand from the Actions tab
 
+# Superseded PR runs are cancelled. Runs on main are never cancelled mid-way: killing a deploy
+# during `terraform apply` would leave the state lock held.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -62,3 +65,52 @@ jobs:
           tags: dispute-portal:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to AWS
+    needs: [api, web, image] # only after every test and the image build pass
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # Native ARM64 build to match the Graviton tasks (free for public repos).
+    # For a private repo, set the repository variable CPU_ARCHITECTURE=X86_64.
+    runs-on: ${{ vars.CPU_ARCHITECTURE == 'X86_64' && 'ubuntu-latest' || 'ubuntu-24.04-arm' }}
+    environment:
+      name: production # add required reviewers in GitHub to gate deploys
+      url: ${{ steps.deploy.outputs.url }}
+    concurrency:
+      group: production
+      cancel-in-progress: false # deploys queue; they never overlap
+    permissions:
+      id-token: write # OIDC: short-lived AWS credentials, no stored keys
+      contents: read
+    env:
+      AWS_REGION: eu-west-1
+      CPU_ARCHITECTURE: ${{ vars.CPU_ARCHITECTURE || 'ARM64' }}
+      # Free-plan AWS accounts allow 1 day of RDS backups; use 7 on a paid account.
+      TF_VAR_db_backup_retention_days: ${{ vars.DB_BACKUP_RETENTION_DAYS || '1' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.16.6
+          terraform_wrapper: false # the wrapper breaks `terraform output -raw` in scripts
+
+      - name: Ensure AWS CLI
+        run: |
+          if ! command -v aws >/dev/null; then
+            arch=$([ "$(uname -m)" = aarch64 ] && echo aarch64 || echo x86_64)
+            curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-${arch}.zip" -o /tmp/awscli.zip
+            unzip -q /tmp/awscli.zip -d /tmp && sudo /tmp/aws/install
+          fi
+          aws --version
+
+      - name: Deploy
+        id: deploy
+        run: |
+          ./scripts/deploy.sh
+          echo "url=$(terraform -chdir=infra/terraform output -raw app_url)" >> "$GITHUB_OUTPUT"

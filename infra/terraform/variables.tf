@@ -5,9 +5,9 @@ variable "name" {
 }
 
 variable "region" {
-  description = "AWS region. af-south-1 (Cape Town) must be enabled on the account first."
+  description = "AWS region. Defaults to Ireland; af-south-1 (Cape Town) works once enabled on the account."
   type        = string
-  default     = "af-south-1"
+  default     = "eu-west-1"
 }
 
 variable "image_tag" {

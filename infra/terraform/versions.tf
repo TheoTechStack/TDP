@@ -12,13 +12,15 @@ terraform {
     }
   }
 
-  # For a team, store state remotely, e.g.:
-  # backend "s3" {
-  #   bucket       = "my-terraform-state"
-  #   key          = "dispute-portal/terraform.tfstate"
-  #   region       = "af-south-1"
-  #   use_lockfile = true
-  # }
+  # Remote state in S3 (created by infra/bootstrap) so CI and laptops share one source of truth.
+  # Bucket and region are supplied at init time by scripts/deploy.sh:
+  #   -backend-config="bucket=tdp-tfstate-<account-id>" -backend-config="region=<region>"
+  # use_lockfile: S3-native locking, so two applies can never run at once (no DynamoDB table).
+  backend "s3" {
+    key          = "dispute-portal/terraform.tfstate"
+    encrypt      = true
+    use_lockfile = true
+  }
 }
 
 provider "aws" {
