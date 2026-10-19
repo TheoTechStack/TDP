@@ -41,7 +41,7 @@ cd web && npm ci && npm test && npm run build
 ## Develop locally
 
 ```bash
-docker compose up -d db                       # PostgreSQL on :5432
+docker compose up -d db                       # PostgreSQL on localhost:5433
 dotnet run --project src/DisputePortal.Api    # API on :8080 (Development: seeds demo data)
 cd web && npm ci && npm run dev               # Vite on :5173, proxies /api to :8080
 ```

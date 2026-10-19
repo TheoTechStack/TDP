@@ -8,8 +8,10 @@ services:
       POSTGRES_DB: disputes
       POSTGRES_USER: disputes
       POSTGRES_PASSWORD: disputes
+    # Exposed on 5433 so it never clashes with a Postgres already running on the host.
+    # The app container still reaches it on db:5432 over the compose network.
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5433}:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
