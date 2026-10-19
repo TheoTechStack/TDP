@@ -8,7 +8,7 @@ append-only history, so the full trail of every dispute (open, decided or withdr
 
 **Live demo:** http://dispute-portal-1381412907.eu-west-1.elb.amazonaws.com — sign in with any demo account below (password `Passw0rd!`). Hosted on AWS ECS Fargate + RDS PostgreSQL in eu-west-1, deployed with `scripts/deploy.sh`.
 
-**Architecture diagram:** [`docs/architecture.drawio`](docs/architecture.drawio). Open it in [diagrams.net](https://app.diagrams.net) or the VS Code draw.io extension.
+**Architecture diagram:** [`docs/architecture.drawio`](docs/architecture.drawio), drawn from the live deployment's real resource IDs. Page 1 shows how a request flows, page 2 how a change ships. Open it in [diagrams.net](https://app.diagrams.net) or the VS Code draw.io extension.
 
 ---
 
