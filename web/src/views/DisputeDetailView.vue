@@ -263,7 +263,7 @@ watch(() => props.id, load, { immediate: true })
 }
 
 .resolution.Upheld {
-  background: var(--accent-soft);
+  background: #e3f4ee;
   color: #0e5c46;
 }
 

@@ -43,6 +43,7 @@ async function signOut() {
 
 <style scoped>
 .topbar {
+  border-bottom: 3px solid var(--signal);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -112,8 +113,8 @@ async function signOut() {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  background: #7ee0c3;
-  color: var(--brand-strong);
+  background: var(--signal);
+  color: #fff;
   padding: 2px 8px;
   border-radius: 999px;
 }

@@ -102,8 +102,8 @@ async function submit() {
   place-items: center;
   padding: 24px;
   background:
-    radial-gradient(1200px 500px at 10% -10%, #dff2ea 0%, transparent 60%),
-    radial-gradient(900px 400px at 110% 110%, #e3ecf0 0%, transparent 60%),
+    radial-gradient(1200px 500px at 10% -10%, #dcecf6 0%, transparent 60%),
+    radial-gradient(900px 400px at 110% 110%, #fbe5e4 0%, transparent 60%),
     var(--canvas);
 }
 

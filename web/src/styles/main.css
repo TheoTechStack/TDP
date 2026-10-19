@@ -1,21 +1,22 @@
 :root {
-  --ink: #12201f;
-  --ink-muted: #5b6b68;
-  --ink-faint: #8a9794;
-  --brand: #0f3d3e;
-  --brand-strong: #0a2c2d;
-  --accent: #1f9e7a;
-  --accent-soft: #e3f4ee;
+  --ink: #1d1d1b;
+  --ink-muted: #56606b;
+  --ink-faint: #8a939d;
+  --brand: #004971;
+  --brand-strong: #003555;
+  --accent: #0085bf;
+  --accent-soft: #e6f3fa;
   --surface: #ffffff;
-  --canvas: #f4f6f4;
-  --line: #e2e7e5;
-  --line-strong: #cfd7d4;
-  --danger: #b4232f;
-  --danger-soft: #fbeaec;
-  --focus: 0 0 0 3px rgba(31, 158, 122, 0.28);
+  --canvas: #f3f5f8;
+  --line: #e1e6ec;
+  --line-strong: #cdd5de;
+  --signal: #e33432;
+  --danger: #c8292a;
+  --danger-soft: #fdecec;
+  --focus: 0 0 0 3px rgba(0, 133, 191, 0.28);
   --radius: 12px;
   --radius-sm: 8px;
-  --shadow: 0 1px 2px rgba(16, 32, 31, 0.04), 0 6px 20px rgba(16, 32, 31, 0.05);
+  --shadow: 0 1px 2px rgba(0, 41, 64, 0.04), 0 6px 20px rgba(0, 41, 64, 0.06);
 
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color: var(--ink);
@@ -143,7 +144,7 @@ textarea:focus-visible {
 
 .btn-danger {
   color: var(--danger);
-  border-color: #efc4c8;
+  border-color: #f3c2c2;
 }
 
 .btn-danger:hover {
@@ -246,7 +247,7 @@ textarea {
 }
 
 .row-link:hover td {
-  background: #fafbfa;
+  background: #f8fafc;
 }
 
 .empty {
@@ -258,7 +259,7 @@ textarea {
 .skeleton {
   height: 14px;
   border-radius: 6px;
-  background: linear-gradient(90deg, #eef1ef 25%, #f6f8f7 50%, #eef1ef 75%);
+  background: linear-gradient(90deg, #eceff3 25%, #f5f7fa 50%, #eceff3 75%);
   background-size: 200% 100%;
   animation: shimmer 1.2s infinite;
 }

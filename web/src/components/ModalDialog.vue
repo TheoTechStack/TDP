@@ -26,12 +26,12 @@ onMounted(() => dialog.value?.showModal?.())
   border: none;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 24px 60px rgba(10, 30, 30, 0.25);
+  box-shadow: 0 24px 60px rgba(0, 41, 64, 0.25);
   color: var(--ink);
 }
 
 .modal::backdrop {
-  background: rgba(10, 30, 30, 0.45);
+  background: rgba(0, 41, 64, 0.45);
   backdrop-filter: blur(2px);
 }
 
