@@ -3,8 +3,10 @@
 Customers view their transactions and dispute the ones that look wrong; a disputes agent reviews and
 resolves them. Every dispute keeps a full, append-only history, so past disputes stay visible.
 
-**Live demo:** http://dispute-portal-1381412907.eu-west-1.elb.amazonaws.com. Click a demo account on the
-sign-in page, then **Sign in**.
+# **Live demo:** http://dispute-portal-1381412907.eu-west-1.elb.amazonaws.com. 
+
+Click a demo account on the
+sign-in page, then **Sign in** which will populate creds stored safely.
 
 | Account | Role | Try this |
 |---|---|---|
@@ -16,12 +18,14 @@ sign-in page, then **Sign in**.
 
 - **Stack:** .NET 10 Web API · EF Core + PostgreSQL 17 · Vue 3 + TypeScript · Docker · Terraform on AWS (ECS Fargate, RDS).
 - **Domain rules live in one place:** a dispute state machine, one open dispute per transaction, a 120-day window, decided disputes are final.
-- **Audit trail can't be rewritten:** every status change is a row in `dispute_events`; a database trigger blocks updates and deletes.
-- **Safe under concurrency:** optimistic locking (`xmin`) plus a partial unique index; conflicts return 409 and the UI reloads.
-- **Secure by default:** customers only ever see their own data (404 otherwise), PBKDF2 passwords, short-lived JWTs, login rate limiting, strict CSP, secrets only in AWS Secrets Manager.
-- **Shipped by CI/CD:** every push to `main` runs the tests and a secret scan, builds one image, and deploys to AWS via GitHub OIDC (no AWS keys stored in GitHub).
+- **Audit trail can't be rewritten:** every status change is a row in `dispute_events`;
+- **Safe under concurrency:** optimistic locking using unique index; conflicts.
 
-**Architecture:** [`docs/architecture.drawio`](docs/architecture.drawio). Open it in [diagrams.net](https://app.diagrams.net); page 1 is the request flow, page 2 the deploy flow.
+##
+
+**Architecture:** [`docs/architecture.drawio`](docs/architecture.drawio). 
+<img width="3060" height="2080" alt="architecture-1 · Request flow drawio" src="https://github.com/user-attachments/assets/83b08016-1406-4b09-a1c0-62e578039343" />
+
 
 ## Run it
 
@@ -40,13 +44,10 @@ Open http://localhost:8080 and click a demo account. The database is migrated an
 dotnet test                                  # unit + integration tests (real PostgreSQL via Testcontainers)
 cd web && npm ci && npm test && npm run build
 ```
+- **Shipped by CI/CD:** every push to `main` runs the tests and a secret scan, builds one image, and deploys to AWS via GitHub OIDC (no AWS keys stored in GitHub).
 
-## Known limitations
+<img width="1135" height="293" alt="image" src="https://github.com/user-attachments/assets/c70ef0e9-27ba-4ba3-882b-9ee43cfb78ad" />
 
-- HTTP only: HTTPS needs a domain and an ACM certificate (the Terraform already accepts `certificate_arn`).
-- Single-AZ database with 1-day backups (free-plan account); production would use Multi-AZ and longer retention.
-- The deploy role has `AdministratorAccess`; its trust policy is narrow, and least privilege is the next step.
-- Demo accounts and one-click sign-in are demo-only settings (`Seed:Enabled`, `Seed:RevealDemoPassword`), off by default.
 
 ## More detail
 
