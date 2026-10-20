@@ -151,9 +151,10 @@ pull request ──► same tests, no deploy
 ```
 
 - **No AWS keys in GitHub.** The deploy job logs in with GitHub's OIDC token and assumes
-  `tdp-github-deploy`. That role's trust policy accepts only
-  `repo:TheoTechStack/TDP:environment:production`, so forks, pull requests and other repositories
-  cannot deploy.
+  `tdp-github-deploy`. That role's trust policy accepts only this repository's `production`
+  environment — by its immutable IDs (`repo:TheoTechStack@130162778/TDP@1426030960:environment:production`,
+  GitHub's subject format for repositories created after July 2026) or by name — so forks, pull
+  requests and other repositories cannot deploy.
 - **Shared, locked state.** Terraform state lives in a versioned, encrypted S3 bucket with S3-native
   locking (`use_lockfile`), so CI and a laptop can never apply at the same time or drift apart.
 - **One deploy path.** CI runs the same `scripts/deploy.sh` you can run locally; there is no separate

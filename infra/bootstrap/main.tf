@@ -34,6 +34,22 @@ variable "github_repository" {
   default     = "TheoTechStack/TDP"
 }
 
+# Repositories created after 15 July 2026 get OIDC subjects with immutable numeric IDs:
+#   repo:<owner>@<owner_id>/<repo>@<repo_id>:environment:<env>
+# Look them up with: curl -s https://api.github.com/repos/<owner>/<repo> | jq '.id, .owner.id'
+# https://github.blog/changelog/2026-04-23-immutable-subject-claims-for-github-actions-oidc-tokens
+variable "github_owner_id" {
+  description = "Numeric ID of the repository owner (immutable)."
+  type        = string
+  default     = "130162778"
+}
+
+variable "github_repository_id" {
+  description = "Numeric ID of the repository (immutable; survives renames, unlike the name)."
+  type        = string
+  default     = "1426030960"
+}
+
 variable "github_environment" {
   description = "GitHub environment the deploy job runs in; only that environment can assume the role."
   type        = string
@@ -56,6 +72,17 @@ data "aws_caller_identity" "current" {}
 locals {
   # Account ID makes the name globally unique and lets deploy.sh derive it without configuration.
   state_bucket = "tdp-tfstate-${data.aws_caller_identity.current.account_id}"
+
+  github_owner = split("/", var.github_repository)[0]
+  github_repo  = split("/", var.github_repository)[1]
+
+  # Exactly these subjects may assume the deploy role (any one of them matches):
+  #  - the immutable-ID form GitHub issues for repositories created after July 2026, and
+  #  - the classic name-only form, for repositories still on the old format.
+  allowed_subjects = [
+    "repo:${local.github_owner}@${var.github_owner_id}/${local.github_repo}@${var.github_repository_id}:environment:${var.github_environment}",
+    "repo:${var.github_repository}:environment:${var.github_environment}",
+  ]
 }
 
 # ---- 1. Terraform state bucket --------------------------------------------------------------
@@ -137,11 +164,12 @@ data "aws_iam_policy_document" "github_trust" {
     }
 
     # Only jobs running in this repo's production environment. Forks, other branches' jobs
-    # without the environment, and other repos all fail this check.
+    # without the environment, and other repos all fail this check. With the immutable-ID form,
+    # a deleted-and-recreated repo with the same name is rejected too.
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repository}:environment:${var.github_environment}"]
+      values   = local.allowed_subjects
     }
   }
 }
@@ -164,6 +192,11 @@ resource "aws_iam_role_policy_attachment" "deploy_admin" {
 
 output "state_bucket" {
   value = aws_s3_bucket.state.bucket
+}
+
+output "allowed_subjects" {
+  description = "OIDC subjects the deploy role trusts."
+  value       = local.allowed_subjects
 }
 
 output "deploy_role_arn" {
