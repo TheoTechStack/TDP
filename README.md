@@ -142,6 +142,8 @@ Manager), ECR, a generated JWT signing key in Secrets Manager, CloudWatch logs a
 
 ### CI/CD: every push to `main` deploys
 
+**Runbook:** [`docs/deployment-runbook.pdf`](docs/deployment-runbook.pdf) covers the full setup step by step: AWS account and CLI profile, first Terraform deploy, bootstrap (S3 state + GitHub OIDC role), GitHub environment configuration, every error hit along the way and its fix, and day-to-day operations.
+
 ```
 push to main ──► API tests ─┐
                  Web tests ─┼─► Docker image build ─► Deploy (production environment)
@@ -221,6 +223,7 @@ web/                         Vue 3 + TypeScript SPA (Vite, Vue Router, Pinia, Vi
 infra/bootstrap/             One-time: Terraform state bucket + GitHub OIDC deploy role
 infra/terraform/             AWS infrastructure (state in S3)
 docs/architecture.drawio     Architecture diagram
+docs/deployment-runbook.pdf  CI/CD + Terraform setup runbook
 Dockerfile                   Multi-stage: Node build → .NET publish → chiseled runtime
 ```
 
