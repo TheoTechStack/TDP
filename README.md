@@ -33,7 +33,8 @@ sign-in page, then **Sign in** which will populate creds stored safely.
 ##
 
 **Architecture:** [`docs/architecture.drawio`](docs/architecture.drawio). 
-<img width="3060" height="2080" alt="architecture-1 · Request flow drawio" src="https://github.com/user-attachments/assets/83b08016-1406-4b09-a1c0-62e578039343" />
+<img width="1724" height="1170" alt="architecture-1 · Request flow drawio (1)" src="https://github.com/user-attachments/assets/7dfd06c5-ebb4-4169-89ec-29c3d46b223a" />
+
 
 
 ## Build it
