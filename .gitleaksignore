@@ -1,0 +1,3 @@
+# Reviewed findings that are not secrets (fingerprint per line).
+# Test-only JWT signing key used by the integration test host, in history before the inline allow comment.
+b0734eee6ed34504972484c84a9de1fafa9c2808:tests/DisputePortal.Api.Tests/Integration/ApiFactory.cs:generic-api-key:46

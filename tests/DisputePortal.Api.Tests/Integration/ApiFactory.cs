@@ -18,7 +18,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     public const string Alice = "alice@demo.test";
     public const string Bongani = "bongani@demo.test";
     public const string Agent = "agent@demo.test";
-    public const string Password = "Passw0rd!";
+    /// <summary>Test-only value fed in as configuration, exactly as production gets it from Secrets Manager.</summary>
+    public const string Password = "integration-test-demo-password";
 
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
@@ -43,8 +44,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Default", _postgres.GetConnectionString());
-        builder.UseSetting("Jwt:SigningKey", "integration-tests-signing-key-0123456789abcdef");
+        builder.UseSetting("Jwt:SigningKey", "integration-tests-signing-key-0123456789abcdef"); // gitleaks:allow (test-only key)
         builder.UseSetting("Seed:Enabled", "true");
+        builder.UseSetting("Seed:DemoPassword", Password);
         builder.UseSetting("RateLimiting:LoginPermitPerMinute", "1000");
     }
 

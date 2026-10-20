@@ -1,7 +1,9 @@
+using DisputePortal.Api.Infrastructure.Persistence;
 using DisputePortal.Api.Infrastructure.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace DisputePortal.Api.Features.Auth;
 
@@ -35,6 +37,26 @@ public sealed class AuthController(AuthService auth) : ControllerBase
         }
 
         return session;
+    }
+
+    /// <summary>
+    /// The seeded demo logins (no passwords), so the sign-in page can offer them. 404 when seeding is off,
+    /// so a real environment never advertises accounts.
+    /// </summary>
+    [HttpGet("demo-accounts")]
+    [AllowAnonymous]
+    [ProducesResponseType<DemoAccountDto[]>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<DemoAccountDto[]> DemoAccounts([FromServices] IOptions<SeedOptions> seed)
+    {
+        if (!seed.Value.Enabled)
+        {
+            return NotFound();
+        }
+
+        return DemoDataSeeder.Accounts
+            .Select(a => new DemoAccountDto(a.Email, a.DisplayName, a.Role, a.Hint))
+            .ToArray();
     }
 
     [HttpGet("me")]

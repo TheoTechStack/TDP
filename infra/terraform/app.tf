@@ -39,6 +39,25 @@ resource "aws_secretsmanager_secret_version" "jwt_signing_key" {
   secret_string = random_password.jwt_signing_key.result
 }
 
+# Password for the seeded demo accounts. Generated here, never in the repo or the image.
+# Read it to share with reviewers:
+#   aws secretsmanager get-secret-value --secret-id dispute-portal/demo-password --query SecretString --output text
+# Rotate: terraform apply -replace=random_password.demo_password (the app re-hashes the demo accounts on start).
+resource "random_password" "demo_password" {
+  length  = 20
+  special = false
+}
+
+resource "aws_secretsmanager_secret" "demo_password" {
+  name                    = "${var.name}/demo-password"
+  recovery_window_in_days = 0
+}
+
+resource "aws_secretsmanager_secret_version" "demo_password" {
+  secret_id     = aws_secretsmanager_secret.demo_password.id
+  secret_string = random_password.demo_password.result
+}
+
 # ---- IAM -----------------------------------------------------------------------------------
 
 data "aws_iam_policy_document" "ecs_tasks_assume" {
@@ -67,6 +86,7 @@ data "aws_iam_policy_document" "read_secrets" {
     actions = ["secretsmanager:GetSecretValue"]
     resources = [
       aws_secretsmanager_secret.jwt_signing_key.arn,
+      aws_secretsmanager_secret.demo_password.arn,
       aws_db_instance.main.master_user_secret[0].secret_arn,
     ]
   }
@@ -136,6 +156,7 @@ resource "aws_ecs_task_definition" "app" {
     secrets = [
       { name = "Database__Password", valueFrom = "${aws_db_instance.main.master_user_secret[0].secret_arn}:password::" },
       { name = "Jwt__SigningKey", valueFrom = aws_secretsmanager_secret.jwt_signing_key.arn },
+      { name = "Seed__DemoPassword", valueFrom = aws_secretsmanager_secret.demo_password.arn },
     ]
 
     logConfiguration = {

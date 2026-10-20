@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <RootNamespace>DisputePortal.Api</RootNamespace>
+    <!-- `dotnet user-secrets set Seed:DemoPassword ...` for local `dotnet run`; never committed. -->
+    <UserSecretsId>dispute-portal-api</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

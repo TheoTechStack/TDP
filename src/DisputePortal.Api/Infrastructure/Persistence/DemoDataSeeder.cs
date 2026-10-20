@@ -1,16 +1,28 @@
 using DisputePortal.Api.Domain;
 using DisputePortal.Api.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace DisputePortal.Api.Infrastructure.Persistence;
 
 /// <summary>
 /// Seeds demo users, transactions and a couple of disputes (with history) so the portal is usable
 /// immediately. Idempotent and safe to run from several instances at once.
+/// The password comes from <see cref="SeedOptions.DemoPassword"/>; on every start the demo accounts are
+/// re-hashed if it changed, so rotating it is "change the secret, redeploy".
 /// </summary>
-public sealed class DemoDataSeeder(AppDbContext db, TimeProvider clock, ILogger<DemoDataSeeder> logger)
+public sealed class DemoDataSeeder(
+    AppDbContext db,
+    TimeProvider clock,
+    IOptions<SeedOptions> options,
+    ILogger<DemoDataSeeder> logger)
 {
-    public const string DemoPassword = "Passw0rd!";
+    public static readonly IReadOnlyList<DemoAccount> Accounts =
+    [
+        new("alice@demo.test", "Alice Mokoena", Roles.Customer, "has dispute history"),
+        new("bongani@demo.test", "Bongani Dlamini", Roles.Customer, "no disputes yet"),
+        new("agent@demo.test", "Thandi Nkosi", Roles.Agent, "reviews & resolves"),
+    ];
 
     private static readonly (string Merchant, string Category, decimal Min, decimal Max)[] Merchants =
     [
@@ -30,20 +42,24 @@ public sealed class DemoDataSeeder(AppDbContext db, TimeProvider clock, ILogger<
 
     public async Task SeedAsync(CancellationToken cancellationToken)
     {
+        var password = options.Value.DemoPassword
+            ?? throw new InvalidOperationException("Seed:DemoPassword is required when seeding is enabled.");
+
         await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
         await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(7420002);", cancellationToken);
 
         if (await db.Users.AnyAsync(cancellationToken))
         {
+            await SyncDemoPasswordsAsync(password, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
             return;
         }
 
         var now = clock.GetUtcNow();
-        var hash = PasswordHasher.Hash(DemoPassword);
-
-        var alice = new User(Guid.CreateVersion7(), "alice@demo.test", "Alice Mokoena", hash, Roles.Customer, now);
-        var bongani = new User(Guid.CreateVersion7(), "bongani@demo.test", "Bongani Dlamini", hash, Roles.Customer, now);
-        var agent = new User(Guid.CreateVersion7(), "agent@demo.test", "Thandi Nkosi", hash, Roles.Agent, now);
+        var alice = CreateUser("alice@demo.test", password, now);
+        var bongani = CreateUser("bongani@demo.test", password, now);
+        var agent = CreateUser("agent@demo.test", password, now);
         db.Users.AddRange(alice, bongani, agent);
 
         var aliceTxns = GenerateTransactions(alice.Id, customerNo: 1, now, seed: 1001);
@@ -70,6 +86,28 @@ public sealed class DemoDataSeeder(AppDbContext db, TimeProvider clock, ILogger<
             "Seeded demo data: {Users} users, {Transactions} transactions",
             3,
             aliceTxns.Count + bonganiTxns.Count);
+    }
+
+    /// <summary>Re-hashes any demo account whose stored hash no longer matches the configured password.</summary>
+    private async Task SyncDemoPasswordsAsync(string password, CancellationToken cancellationToken)
+    {
+        var emails = Accounts.Select(a => a.Email).ToList();
+        var demoUsers = await db.Users.Where(u => emails.Contains(u.Email)).ToListAsync(cancellationToken);
+
+        var stale = demoUsers.Where(u => !PasswordHasher.Verify(password, u.PasswordHash)).ToList();
+        stale.ForEach(u => u.ChangePasswordHash(PasswordHasher.Hash(password)));
+
+        if (stale.Count > 0)
+        {
+            logger.LogInformation("Demo password changed: re-hashed {Count} demo accounts", stale.Count);
+        }
+    }
+
+    // Each user gets their own hash (and so their own salt), even with the same password.
+    private static User CreateUser(string email, string password, DateTimeOffset now)
+    {
+        var account = Accounts.Single(a => a.Email == email);
+        return new User(Guid.CreateVersion7(), account.Email, account.DisplayName, PasswordHasher.Hash(password), account.Role, now);
     }
 
     private static List<Transaction> GenerateTransactions(Guid customerId, int customerNo, DateTimeOffset now, int seed)
@@ -100,3 +138,6 @@ public sealed class DemoDataSeeder(AppDbContext db, TimeProvider clock, ILogger<
         return result;
     }
 }
+
+/// <summary>A seeded demo login, as advertised on the sign-in page. Never carries the password.</summary>
+public sealed record DemoAccount(string Email, string DisplayName, string Role, string Hint);

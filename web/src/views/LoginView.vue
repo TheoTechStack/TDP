@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { ApiError } from '@/api/client'
+import { api, ApiError } from '@/api/client'
+import type { DemoAccount } from '@/api/types'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -14,16 +15,27 @@ const submitting = ref(false)
 const error = ref<string | null>(null)
 const expired = route.query.expired === '1'
 
-const demoAccounts = [
-  { email: 'alice@demo.test', name: 'Alice Mokoena', role: 'Customer', hint: 'has dispute history' },
-  { email: 'bongani@demo.test', name: 'Bongani Dlamini', role: 'Customer', hint: 'no disputes yet' },
-  { email: 'agent@demo.test', name: 'Thandi Nkosi', role: 'Disputes agent', hint: 'reviews & resolves' },
-]
+const passwordInput = ref<HTMLInputElement | null>(null)
 
-function useDemo(account: string) {
-  email.value = account
-  password.value = 'Passw0rd!'
+// Offered only where the API seeds demo data; elsewhere the endpoint is 404 and the panel stays hidden.
+// The password is never sent to the browser: it is shared with reviewers separately.
+const demoAccounts = ref<DemoAccount[]>([])
+
+onMounted(async () => {
+  try {
+    demoAccounts.value = await api.demoAccounts()
+  } catch {
+    demoAccounts.value = []
+  }
+})
+
+function useDemo(account: DemoAccount) {
+  email.value = account.email
+  password.value = ''
+  passwordInput.value?.focus()
 }
+
+const roleLabel = (role: DemoAccount['role']) => (role === 'Agent' ? 'Disputes agent' : 'Customer')
 
 async function submit() {
   submitting.value = true
@@ -63,6 +75,7 @@ async function submit() {
           <label for="password">Password</label>
           <input
             id="password"
+            ref="passwordInput"
             v-model="password"
             class="input"
             type="password"
@@ -75,18 +88,18 @@ async function submit() {
         </button>
       </form>
 
-      <div class="demo">
-        <p class="demo-title">Demo accounts <span class="muted">· password Passw0rd!</span></p>
+      <div v-if="demoAccounts.length" class="demo">
+        <p class="demo-title">Demo accounts <span class="muted">· pick one, then enter the demo password</span></p>
         <button
           v-for="account in demoAccounts"
           :key="account.email"
           type="button"
           class="demo-account"
-          @click="useDemo(account.email)"
+          @click="useDemo(account)"
         >
           <span>
-            <strong>{{ account.name }}</strong>
-            <span class="muted"> · {{ account.role }}</span>
+            <strong>{{ account.displayName }}</strong>
+            <span class="muted"> · {{ roleLabel(account.role) }}</span>
           </span>
           <span class="muted small">{{ account.hint }}</span>
         </button>

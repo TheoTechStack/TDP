@@ -27,4 +27,6 @@ public sealed class User
     public string Role { get; private set; } = Roles.Customer;
 
     public DateTimeOffset CreatedAt { get; private set; }
+
+    public void ChangePasswordHash(string passwordHash) => PasswordHash = passwordHash;
 }

@@ -4,6 +4,7 @@ import type {
   DisputeOutcome,
   DisputeReason,
   DisputeStatus,
+  DemoAccount,
   LoginResponse,
   Paged,
   Transaction,
@@ -88,6 +89,8 @@ function query(params: Record<string, string | number | undefined | null>): stri
 export const api = {
   login: (email: string, password: string) => request<LoginResponse>('POST', '/api/auth/login', { email, password }),
   me: () => request<User>('GET', '/api/auth/me'),
+  /** 404 outside demo environments. */
+  demoAccounts: () => request<DemoAccount[]>('GET', '/api/auth/demo-accounts'),
 
   transactions: (params: { page?: number; pageSize?: number; search?: string }) =>
     request<Paged<Transaction>>('GET', `/api/transactions${query(params)}`),

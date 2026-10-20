@@ -18,3 +18,8 @@ output "ecs_service" {
 output "log_group" {
   value = aws_cloudwatch_log_group.app.name
 }
+
+output "demo_password_secret" {
+  description = "Secrets Manager secret holding the demo accounts' password (the name, not the value)."
+  value       = aws_secretsmanager_secret.demo_password.name
+}

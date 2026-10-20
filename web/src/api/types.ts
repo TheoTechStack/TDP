@@ -2,6 +2,14 @@
 
 export type Role = 'Customer' | 'Agent'
 
+/** A seeded demo login offered on the sign-in page. The API never sends its password. */
+export interface DemoAccount {
+  email: string
+  displayName: string
+  role: Role
+  hint: string
+}
+
 export type DisputeStatus = 'Submitted' | 'UnderReview' | 'Upheld' | 'Rejected' | 'Withdrawn'
 
 export type DisputeReason = 'Unauthorised' | 'Duplicate' | 'IncorrectAmount' | 'GoodsNotReceived' | 'Other'

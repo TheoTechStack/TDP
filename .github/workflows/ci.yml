@@ -34,6 +34,18 @@ jobs:
           name: api-test-results
           path: "**/TestResults/**"
 
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # scan every commit, not only the latest: a secret deleted later is still leaked
+      - name: Scan the repository history for committed secrets
+        run: |
+          curl -fsSL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_linux_x64.tar.gz | tar xz gitleaks
+          ./gitleaks git . --redact --no-banner --exit-code 1
+
   web:
     name: Web (typecheck + tests + build)
     runs-on: ubuntu-latest
@@ -54,7 +66,7 @@ jobs:
   image:
     name: Docker image
     runs-on: ubuntu-latest
-    needs: [api, web]
+    needs: [api, web, secrets]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3

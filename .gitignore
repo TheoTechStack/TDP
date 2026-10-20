@@ -14,6 +14,11 @@ infra/**/.terraform/
 infra/**/*.tfstate*
 infra/**/*.tfvars
 
+# Local secrets
+.env
+.env.*
+!.env.example
+
 # OS / editors
 .DS_Store
 .idea/
