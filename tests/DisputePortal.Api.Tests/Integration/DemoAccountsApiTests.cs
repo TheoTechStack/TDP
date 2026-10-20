@@ -13,16 +13,27 @@ namespace DisputePortal.Api.Tests.Integration;
 public sealed class DemoAccountsApiTests(ApiFactory api)
 {
     [Fact]
-    public async Task Demo_accounts_are_listed_without_any_password()
+    public async Task Demo_accounts_are_listed_without_the_password_by_default()
     {
         var response = await api.CreateClient().GetAsync("/api/auth/demo-accounts");
-        var body = await response.Content.ReadAsStringAsync();
+        var raw = await response.Content.ReadAsStringAsync();
+        var body = await response.Content.ReadFromJsonAsync<DemoAccountsResponse>(ApiFactory.Json);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains(ApiFactory.Alice, body);
-        Assert.Contains(ApiFactory.Agent, body);
-        Assert.DoesNotContain(ApiFactory.Password, body);
-        Assert.DoesNotContain("password", body, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(body!.Accounts, a => a.Email == ApiFactory.Alice);
+        Assert.Contains(body.Accounts, a => a.Email == ApiFactory.Agent);
+        Assert.Null(body.Password);
+        Assert.DoesNotContain(ApiFactory.Password, raw);
+    }
+
+    [Fact]
+    public async Task Demo_password_is_included_only_when_the_environment_opts_in()
+    {
+        using var factory = api.WithWebHostBuilder(b => b.UseSetting("Seed:RevealDemoPassword", "true"));
+
+        var body = await factory.CreateClient().GetFromJsonAsync<DemoAccountsResponse>("/api/auth/demo-accounts", ApiFactory.Json);
+
+        Assert.Equal(ApiFactory.Password, body!.Password);
     }
 
     [Fact]

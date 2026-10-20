@@ -15,6 +15,12 @@ public sealed class SeedOptions : IValidatableObject
 
     public string? DemoPassword { get; set; }
 
+    /// <summary>
+    /// Lets the sign-in page fill the demo password in for reviewers. Opt-in, and only meaningful with
+    /// <see cref="Enabled"/>: the password is still configuration (Secrets Manager), never code.
+    /// </summary>
+    public bool RevealDemoPassword { get; set; }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (Enabled && (DemoPassword is null || DemoPassword.Length < MinimumPasswordLength))

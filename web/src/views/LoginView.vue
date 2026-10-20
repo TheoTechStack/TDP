@@ -18,12 +18,16 @@ const expired = route.query.expired === '1'
 const passwordInput = ref<HTMLInputElement | null>(null)
 
 // Offered only where the API seeds demo data; elsewhere the endpoint is 404 and the panel stays hidden.
-// The password is never sent to the browser: it is shared with reviewers separately.
+// The password comes from the server's configuration (Secrets Manager in AWS), and only where the
+// environment opts in; otherwise the reviewer types it.
 const demoAccounts = ref<DemoAccount[]>([])
+const demoPassword = ref<string | null>(null)
 
 onMounted(async () => {
   try {
-    demoAccounts.value = await api.demoAccounts()
+    const demo = await api.demoAccounts()
+    demoAccounts.value = demo.accounts
+    demoPassword.value = demo.password
   } catch {
     demoAccounts.value = []
   }
@@ -31,8 +35,8 @@ onMounted(async () => {
 
 function useDemo(account: DemoAccount) {
   email.value = account.email
-  password.value = ''
-  passwordInput.value?.focus()
+  password.value = demoPassword.value ?? ''
+  if (!demoPassword.value) passwordInput.value?.focus()
 }
 
 const roleLabel = (role: DemoAccount['role']) => (role === 'Agent' ? 'Disputes agent' : 'Customer')
@@ -89,7 +93,10 @@ async function submit() {
       </form>
 
       <div v-if="demoAccounts.length" class="demo">
-        <p class="demo-title">Demo accounts <span class="muted">· pick one, then enter the demo password</span></p>
+        <p class="demo-title">
+          Demo accounts
+          <span class="muted">· {{ demoPassword ? 'click one, then sign in' : 'pick one, then enter the demo password' }}</span>
+        </p>
         <button
           v-for="account in demoAccounts"
           :key="account.email"

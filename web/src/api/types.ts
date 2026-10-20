@@ -2,12 +2,18 @@
 
 export type Role = 'Customer' | 'Agent'
 
-/** A seeded demo login offered on the sign-in page. The API never sends its password. */
+/** A seeded demo login offered on the sign-in page. */
 export interface DemoAccount {
   email: string
   displayName: string
   role: Role
   hint: string
+}
+
+/** `password` is null unless the environment opts in (Seed:RevealDemoPassword). */
+export interface DemoAccounts {
+  accounts: DemoAccount[]
+  password: string | null
 }
 
 export type DisputeStatus = 'Submitted' | 'UnderReview' | 'Upheld' | 'Rejected' | 'Withdrawn'

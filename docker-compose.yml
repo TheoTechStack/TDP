@@ -35,6 +35,7 @@ services:
       Seed__Enabled: "true"
       # From the git-ignored .env file: the demo password is never committed.
       Seed__DemoPassword: ${DEMO_PASSWORD:?Set DEMO_PASSWORD in .env (copy .env.example)}
+      Seed__RevealDemoPassword: "true"
 
 volumes:
   db-data:

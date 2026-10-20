@@ -151,6 +151,7 @@ resource "aws_ecs_task_definition" "app" {
       { name = "Database__Username", value = aws_db_instance.main.username },
       { name = "Database__SslMode", value = "Require" },
       { name = "Seed__Enabled", value = tostring(var.seed_demo_data) },
+      { name = "Seed__RevealDemoPassword", value = tostring(var.reveal_demo_password) },
     ]
 
     secrets = [

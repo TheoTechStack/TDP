@@ -6,7 +6,7 @@ append-only history, so the full trail of every dispute (open, decided or withdr
 
 **Stack:** .NET 10 Web API (controllers) · EF Core + PostgreSQL 17 · Vue 3 + TypeScript (Vite) · Docker · Terraform on AWS (ECS Fargate, RDS)
 
-**Live demo:** http://dispute-portal-1381412907.eu-west-1.elb.amazonaws.com — sign in with any demo account below; the demo password is shared with the submission (it lives in AWS Secrets Manager, never in the repo). Hosted on AWS ECS Fargate + RDS PostgreSQL in eu-west-1, deployed with `scripts/deploy.sh`.
+**Live demo:** http://dispute-portal-1381412907.eu-west-1.elb.amazonaws.com — click any demo account on the sign-in page and sign in (the password is filled in from AWS Secrets Manager; it is never in the repo). Hosted on AWS ECS Fargate + RDS PostgreSQL in eu-west-1, deployed with `scripts/deploy.sh`.
 
 **Architecture diagram:** [`docs/architecture.drawio`](docs/architecture.drawio), drawn from the live deployment's real resource IDs. Page 1 shows how a request flows, page 2 how a change ships. Open it in [diagrams.net](https://app.diagrams.net) or the VS Code draw.io extension.
 
@@ -21,7 +21,7 @@ cp .env.example .env      # then set DEMO_PASSWORD (12+ characters) in .env, whi
 docker compose up --build
 ```
 
-Open **http://localhost:8080** and sign in with a demo account, using the password you set in `.env`:
+Open **http://localhost:8080** and click a demo account on the sign-in page (it fills in the password you set in `.env`):
 
 | Account | Role | What to try |
 |---|---|---|
@@ -29,7 +29,7 @@ Open **http://localhost:8080** and sign in with a demo account, using the passwo
 | `bongani@demo.test` | Customer | Clean slate: raise a dispute, withdraw it, raise it again |
 | `agent@demo.test` | Disputes agent | Open the queue, start a review, record a decision |
 
-The login page lists the accounts (click one to fill in the email). The database is migrated and seeded on startup.
+Clicking an account fills in the email and password. The database is migrated and seeded on startup.
 
 **Where the demo password lives.** Nowhere in the code. It is configuration (`Seed:DemoPassword`), required
 whenever seeding is on, and the app refuses to start without one of at least 12 characters:
@@ -41,8 +41,10 @@ whenever seeding is on, and the app refuses to start without one of at least 12 
 | `dotnet run` | `dotnet user-secrets set Seed:DemoPassword "<password>" --project src/DisputePortal.Api` |
 | Integration tests | A test-only value set by the test host |
 
-The sign-in page gets the account list from `GET /api/auth/demo-accounts`, which never includes a password and
-returns 404 when seeding is off, so a real environment advertises nothing. On every start the demo accounts
+The sign-in page gets the accounts from `GET /api/auth/demo-accounts`, which returns 404 when seeding is off, so a
+real environment advertises nothing. It includes the password only when the environment opts in with
+`Seed:RevealDemoPassword` (on for local and the live demo, off by default), which is what makes one-click sign-in
+work without the password ever being in the code. On every start the demo accounts
 are re-hashed if the configured password changed, so rotating it is: change the secret, redeploy.
 
 ## Run the tests

@@ -32,6 +32,12 @@ variable "desired_count" {
   default     = 2
 }
 
+variable "reveal_demo_password" {
+  description = "Let the sign-in page fill in the demo password (one-click sign-in for reviewers). Demo only."
+  type        = bool
+  default     = true
+}
+
 variable "seed_demo_data" {
   description = "Seed demo users and transactions on first start. Turn off for a real environment."
   type        = bool

@@ -40,23 +40,27 @@ public sealed class AuthController(AuthService auth) : ControllerBase
     }
 
     /// <summary>
-    /// The seeded demo logins (no passwords), so the sign-in page can offer them. 404 when seeding is off,
-    /// so a real environment never advertises accounts.
+    /// The seeded demo logins, so the sign-in page can offer them. 404 when seeding is off, so a real
+    /// environment never advertises accounts. The password is included only when the environment opts in
+    /// (<c>Seed:RevealDemoPassword</c>), so reviewers can sign in with one click.
     /// </summary>
     [HttpGet("demo-accounts")]
     [AllowAnonymous]
-    [ProducesResponseType<DemoAccountDto[]>(StatusCodes.Status200OK)]
+    [ProducesResponseType<DemoAccountsResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<DemoAccountDto[]> DemoAccounts([FromServices] IOptions<SeedOptions> seed)
+    public ActionResult<DemoAccountsResponse> DemoAccounts([FromServices] IOptions<SeedOptions> seed)
     {
-        if (!seed.Value.Enabled)
+        var options = seed.Value;
+        if (!options.Enabled)
         {
             return NotFound();
         }
 
-        return DemoDataSeeder.Accounts
+        var accounts = DemoDataSeeder.Accounts
             .Select(a => new DemoAccountDto(a.Email, a.DisplayName, a.Role, a.Hint))
             .ToArray();
+
+        return new DemoAccountsResponse(accounts, options.RevealDemoPassword ? options.DemoPassword : null);
     }
 
     [HttpGet("me")]
