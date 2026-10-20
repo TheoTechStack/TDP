@@ -25,6 +25,18 @@ jobs:
         with:
           global-json-file: global.json
       - run: dotnet restore
+      # Report-only while this is a demo under review: a CVE published tomorrow against a package we didn't
+      # touch shouldn't block a redeploy. Findings show as a warning on the run and a list in the summary.
+      # For production, make this fail on high/critical instead.
+      - name: Check NuGet packages for known vulnerabilities (report only)
+        run: |
+          dotnet list package --vulnerable --include-transitive 2>&1 | tee vulnerable.txt
+          if grep -q "has the following vulnerable packages" vulnerable.txt; then
+            echo "::warning title=Vulnerable NuGet packages::See the job summary for the list."
+            { echo "### ⚠️ Vulnerable NuGet packages"; echo '```'; cat vulnerable.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### ✅ No known vulnerable NuGet packages" >> "$GITHUB_STEP_SUMMARY"
+          fi
       - run: dotnet build --no-restore --configuration Release
       # Integration tests start PostgreSQL with Testcontainers (Docker is available on the runner).
       - run: dotnet test --no-build --configuration Release --logger "trx" --collect "XPlat Code Coverage"
@@ -60,6 +72,16 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+      # Report-only, as for NuGet above. Only packages that ship to the browser (--omit=dev), high and critical.
+      - name: Check npm packages for known vulnerabilities (report only)
+        run: |
+          if npm audit --omit=dev --audit-level=high > audit.txt 2>&1; then
+            echo "### ✅ No high or critical npm vulnerabilities" >> "$GITHUB_STEP_SUMMARY"
+          else
+            cat audit.txt
+            echo "::warning title=Vulnerable npm packages::See the job summary for the list."
+            { echo "### ⚠️ npm audit (high and critical)"; echo '```'; cat audit.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
       - run: npm test
       - run: npm run build
 
