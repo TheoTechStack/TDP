@@ -3,7 +3,7 @@
 Customers view their transactions and dispute the ones that look wrong; a disputes agent reviews and
 resolves them. Every dispute keeps a full, append-only history, so past disputes stay visible.
 
-# **Live demo:** http://dispute-portal-1381412907.eu-west-1.elb.amazonaws.com. 
+## **Live demo:** http://dispute-portal-1381412907.eu-west-1.elb.amazonaws.com. 
 
 Click a demo account on the
 sign-in page, then **Sign in** which will populate creds stored safely.
