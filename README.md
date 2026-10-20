@@ -17,7 +17,7 @@ sign-in page, then **Sign in** which will populate creds stored safely.
 ## TL;DR
 
 - **Stack:** .NET 10 Web API · EF Core + PostgreSQL 17 · Vue 3 + TypeScript · Docker · Terraform on AWS (ECS Fargate, RDS).
-- **Domain rules live in one place:** a dispute state machine, one open dispute per transaction, a 120-day window, decided disputes are final.
+- **Domain rules live in one place:** one open dispute per transaction, a 120-day window, decided disputes are final.
 - **Audit trail can't be rewritten:** every status change is a row in `dispute_events`;
 - **Safe under concurrency:** optimistic locking using unique index; conflicts.
 
