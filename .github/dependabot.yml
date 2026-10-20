@@ -1,0 +1,38 @@
+# Dependabot opens PRs to keep dependencies current; each PR runs the full CI (tests, secret scan,
+# vulnerability report) before anything is merged or deployed.
+# Security fixes come separately and immediately once "Dependabot security updates" is on in repo settings.
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      nuget:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: terraform
+    directory: /infra/terraform
+    schedule:
+      interval: weekly
