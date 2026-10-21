@@ -16,6 +16,7 @@ public enum DisputeReason
     IncorrectAmount,
     GoodsNotReceived,
     Other,
+    SubscriptionCancelled,
 }
 
 /// <summary>The outcome an agent can choose when resolving a dispute.</summary>

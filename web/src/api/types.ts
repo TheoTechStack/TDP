@@ -18,7 +18,13 @@ export interface DemoAccounts {
 
 export type DisputeStatus = 'Submitted' | 'UnderReview' | 'Upheld' | 'Rejected' | 'Withdrawn'
 
-export type DisputeReason = 'Unauthorised' | 'Duplicate' | 'IncorrectAmount' | 'GoodsNotReceived' | 'Other'
+export type DisputeReason =
+  | 'Unauthorised'
+  | 'Duplicate'
+  | 'IncorrectAmount'
+  | 'GoodsNotReceived'
+  | 'SubscriptionCancelled'
+  | 'Other'
 
 export type DisputeOutcome = 'Upheld' | 'Rejected'
 

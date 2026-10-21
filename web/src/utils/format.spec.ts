@@ -12,7 +12,14 @@ describe('formatMoney', () => {
 describe('labels', () => {
   it('has a label for every status and reason the API can return', () => {
     expect(Object.keys(statusLabels)).toEqual(['Submitted', 'UnderReview', 'Upheld', 'Rejected', 'Withdrawn'])
-    expect(Object.keys(reasonLabels)).toHaveLength(5)
+    expect(Object.keys(reasonLabels)).toEqual([
+      'Unauthorised',
+      'Duplicate',
+      'IncorrectAmount',
+      'GoodsNotReceived',
+      'SubscriptionCancelled',
+      'Other',
+    ])
   })
 
   it('treats only submitted and under-review disputes as active', () => {
