@@ -87,6 +87,4 @@ cd web && npm ci && npm test && npm run build
 
 | Doc | What's in it |
 |---|---|
-| [docs/design.md](docs/design.md) | Dispute lifecycle, API endpoints, design decisions, project layout |
-| [docs/deployment.md](docs/deployment.md) | AWS setup, CI/CD, secrets and configuration, local development |
-| [docs/deployment-runbook.pdf](docs/deployment-runbook.pdf) | Step-by-step pipeline and Terraform setup, including every issue hit and its fix |
+| [docs/design.md](docs/design.md) | Dispute lifecycle, API endpoints, design decisions, project layout 
