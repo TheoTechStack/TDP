@@ -32,10 +32,11 @@ export const statusLabels: Record<DisputeStatus, string> = {
 }
 
 export const reasonLabels: Record<DisputeReason, string> = {
-  Unauthorised: "I didn't make this transaction",
+  Unauthorised: "I didn't make or approve this (possible fraud)",
   Duplicate: 'I was charged more than once',
   IncorrectAmount: 'The amount is wrong',
   GoodsNotReceived: "I didn't receive the goods or service",
+  SubscriptionCancelled: 'I cancelled this subscription or contract',
   Other: 'Something else',
 }
 
